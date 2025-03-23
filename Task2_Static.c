@@ -4,21 +4,21 @@
 
 using namespace std;
 
-const int NUM_INTERVALS = 1000000; // Number of intervals
+const int NUM_INTERVALS = 3000000; // Number of intervals
 const double A = 0.0, B = 1.0; // Integration range
-const int NUM_THREADS = 8; // Number of threads (adjustable)
+const int NUM_THREADS = 4; // Number of threads (adjustable)
 
 // Function to integrate (example: f(x) = x^2)
 double function(double x) {
     return x * x;
 }
 
-// Parallel Trapezoidal Rule Integration with Static Scheduling
+// Parallel Trapezoidal Rule Integration with Static Scheduling and Chunk Size
 double parallelTrapezoidalRuleStatic(double a, double b, int n, int num_threads) {
     double h = (b - a) / n; // Step size
     double integral = (function(a) + function(b)) / 2.0;
 
-    #pragma omp parallel for num_threads(num_threads) reduction(+:integral) schedule(static)
+    #pragma omp parallel for num_threads(num_threads) reduction(+:integral) schedule(static, 2000)
     for (int i = 1; i < n; i++) {
         integral += function(a + i * h);
     }
@@ -28,14 +28,25 @@ double parallelTrapezoidalRuleStatic(double a, double b, int n, int num_threads)
 }
 
 int main() {
-    // Parallel Execution (Static Scheduling)
-    double start_par_static = omp_get_wtime();
-    double result_par_static = parallelTrapezoidalRuleStatic(A, B, NUM_INTERVALS, NUM_THREADS);
-    double end_par_static = omp_get_wtime();
-    
-    // Output Results
-    cout << "Integral Result (Parallel - Static Scheduling): " << result_par_static << endl;
-    cout << "Parallel Execution Time (Static): " << fixed << (end_par_static - start_par_static) << " seconds" << endl;
-    
+    double total_time = 0.0;
+    double result_par_static = 0.0;
+
+    // Run the integration 10 times and calculate average execution time
+    for (int i = 0; i < 10; i++) {
+        double start_par_static = omp_get_wtime();
+        result_par_static = parallelTrapezoidalRuleStatic(A, B, NUM_INTERVALS, NUM_THREADS);
+        double end_par_static = omp_get_wtime();
+        
+        double execution_time = end_par_static - start_par_static;
+        total_time += execution_time;
+
+        cout << "Run " << i + 1 << " Execution Time (Static, Chunk Size = 1000): " << fixed << execution_time << " seconds" << endl;
+    }
+
+    // Calculate and display the average execution time
+    double average_time = total_time / 10.0;
+    cout << "\nIntegral Result (Parallel - Static Scheduling, Chunk Size = 2000): " << result_par_static << endl;
+    cout << "Average Execution Time over 10 Runs (Static, Chunk Size = 2000): " << fixed << average_time << " seconds" << endl;
+
     return 0;
 }
