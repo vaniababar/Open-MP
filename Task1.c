@@ -5,7 +5,7 @@
 using namespace std;
 using namespace std::chrono; // For easier access to time functions
 
-const int NUM_INTERVALS = 1000000; // Number of intervals
+const int NUM_INTERVALS = 2000000; // Number of intervals
 const double A = 0.0, B = 1.0; // Integration range
 
 // Function to integrate (example: f(x) = x^2)
